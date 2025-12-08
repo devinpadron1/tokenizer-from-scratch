@@ -39,8 +39,7 @@ unused_code = 256
 while True:
     # Gather most frequent pairs
     pairs = defaultdict(int) 
-    for i in range(1, len(byte_list)):
-        b1, b2 = byte_list[i - 1], byte_list[i]
+    for b1, b2 in zip(byte_list, byte_list[1:]):
         pairs[(b1, b2)] += 1
 
     max_freq = max(pairs.values()) 
@@ -54,11 +53,10 @@ while True:
     unused_code += 1
 
     # Replace
-    for i in range(1, len(byte_list)):
-        pair = (byte_list[i - 1], byte_list[i])
-        if pair == max_pair:
-            byte_list[i - 1] = unused_code
-            byte_list[i] = -1
+    for i, (b1, b2) in enumerate(zip(byte_list, byte_list[1:])):
+        if (b1, b2) == max_pair:
+            byte_list[i] = unused_code
+            byte_list[i + 1] = -1
 
     # Remove -1s
     byte_list = [byte for byte in byte_list if byte != -1]
