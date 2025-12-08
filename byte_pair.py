@@ -37,30 +37,26 @@ unused_code = 256
 
 # Byte pair loop
 while True:
-    # Count pairs
-    pairs = defaultdict(int) 
-    most_freq_pair = ["", 1]  
-   
     # Gather most frequent pairs
+    pairs = defaultdict(int) 
     for i in range(1, len(byte_list)):
-        pair = str(f"{byte_list[i]}+{byte_list[i - 1]}")
-        pairs[pair] += 1
-        freq = pairs[pair]
-        if freq > most_freq_pair[1]:
-            most_freq_pair = [pair, freq] 
- 
-    print(f"most_freq_pair={most_freq_pair}")
+        b1, b2 = byte_list[i - 1], byte_list[i]
+        pairs[(b1, b2)] += 1
 
-    if most_freq_pair[1] == 1:
+    max_freq = max(pairs.values()) 
+    max_pair = max(pairs, key=pairs.get)
+    print(f"max_pair={max_pair}")
+
+    if max_freq == 1:
         break
 
-    new_encodings[unused_code] = most_freq_pair[0]
+    new_encodings[unused_code] = max_pair 
     unused_code += 1
 
     # Replace
     for i in range(1, len(byte_list)):
-        pair = str(f"{byte_list[i]}+{byte_list[i - 1]}")
-        if pair == most_freq_pair[0]:
+        pair = (byte_list[i - 1], byte_list[i])
+        if pair == max_pair:
             byte_list[i - 1] = unused_code
             byte_list[i] = -1
 
