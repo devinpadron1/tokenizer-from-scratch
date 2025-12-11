@@ -30,7 +30,7 @@ with open("training_text.txt", "r", encoding="utf-8") as f:
     s = f.read()
 
 byte_list = list(s.encode("utf-8"))
-print(f"initial size of byte_list={len(byte_list)}")  # show byte pt num
+# print(byte_list)
 
 new_encodings = {}
 unused_code = 256
@@ -44,13 +44,9 @@ while True:
 
     max_freq = max(pairs.values()) 
     max_pair = max(pairs, key=pairs.get)
-    print(f"max_pair={max_pair}")
 
     if max_freq == 1:
         break
-
-    new_encodings[unused_code] = max_pair 
-    unused_code += 1
 
     # Replace
     for i, (b1, b2) in enumerate(zip(byte_list, byte_list[1:])):
@@ -58,8 +54,11 @@ while True:
             byte_list[i] = unused_code
             byte_list[i + 1] = -1
 
+    new_encodings[unused_code] = max_pair 
+    unused_code += 1
+
     # Remove -1s
     byte_list = [byte for byte in byte_list if byte != -1]
+    print(byte_list)
 
-    print(f"size of byte_list {len(byte_list)}")
 
