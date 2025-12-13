@@ -25,40 +25,53 @@ Data Structures
 
 from collections import defaultdict
 
-s = ""
+class Tokenizer():
+    def __init__(self, training_data):
+        self.data = training_data
+
+    def train(self):
+        byte_list = list(self.data.encode("utf-8"))
+        # print(byte_list)
+
+        new_encodings = {}
+        unused_code = 256
+
+        # Byte pair loop
+        while True:
+            # Gather most frequent pairs
+            pairs = defaultdict(int) 
+            for b1, b2 in zip(byte_list, byte_list[1:]):
+                pairs[(b1, b2)] += 1
+
+            max_freq = max(pairs.values()) 
+            max_pair = max(pairs, key=pairs.get)
+
+            if max_freq == 1:
+                break
+
+            # Replace
+            for i, (b1, b2) in enumerate(zip(byte_list, byte_list[1:])):
+                if (b1, b2) == max_pair:
+                    byte_list[i] = unused_code
+                    byte_list[i + 1] = -1
+
+            new_encodings[unused_code] = max_pair 
+            unused_code += 1
+
+            # Remove -1s
+            byte_list = [byte for byte in byte_list if byte != -1]
+
+    def encode(self, s: str):
+        """ string -> tokens """
+        pass
+
+    def decode(self) -> str:
+        """ tokens -> string """
+        pass
+
+
+data = ""
 with open("training_text.txt", "r", encoding="utf-8") as f:
-    s = f.read()
+    data = f.read()
 
-byte_list = list(s.encode("utf-8"))
-# print(byte_list)
-
-new_encodings = {}
-unused_code = 256
-
-# Byte pair loop
-while True:
-    # Gather most frequent pairs
-    pairs = defaultdict(int) 
-    for b1, b2 in zip(byte_list, byte_list[1:]):
-        pairs[(b1, b2)] += 1
-
-    max_freq = max(pairs.values()) 
-    max_pair = max(pairs, key=pairs.get)
-
-    if max_freq == 1:
-        break
-
-    # Replace
-    for i, (b1, b2) in enumerate(zip(byte_list, byte_list[1:])):
-        if (b1, b2) == max_pair:
-            byte_list[i] = unused_code
-            byte_list[i + 1] = -1
-
-    new_encodings[unused_code] = max_pair 
-    unused_code += 1
-
-    # Remove -1s
-    byte_list = [byte for byte in byte_list if byte != -1]
-    print(byte_list)
-
-
+t = Tokenizer(training_data=data)
