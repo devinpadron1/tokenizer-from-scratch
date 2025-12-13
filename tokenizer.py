@@ -24,11 +24,24 @@ Data Structures
 
 
 from collections import defaultdict
+import time
+
+
+def timed(func):
+    def wrapper(*args, **kwargs):
+        start = time.perf_counter()
+        result = func(*args, **kwargs)
+        elapsed = time.perf_counter() - start
+        print(f"{func.__name__} took {elapsed:.4f} seconds")
+        return result
+    return wrapper
+
 
 class Tokenizer():
     def __init__(self, training_data):
         self.data = training_data
 
+    @timed
     def train(self):
         byte_list = list(self.data.encode("utf-8"))
         # print(byte_list)
@@ -61,6 +74,8 @@ class Tokenizer():
             # Remove -1s
             byte_list = [byte for byte in byte_list if byte != -1]
 
+        # print(byte_list)
+
     def encode(self, s: str):
         """ string -> tokens """
         pass
@@ -75,3 +90,4 @@ with open("training_text.txt", "r", encoding="utf-8") as f:
     data = f.read()
 
 t = Tokenizer(training_data=data)
+t.train()
