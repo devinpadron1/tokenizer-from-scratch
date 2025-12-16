@@ -11,3 +11,5 @@ How to determine vocab size?
 Does a larger vocabulary size make a model better? What are the pros / cons of a large vocabulary size? What are lookup tables?
 
 I don't understand how lookup tables work. We'll get there .
+
+Fundamental question you need to understand: why is tokenization required? Why can't we feed the model raw strings?
