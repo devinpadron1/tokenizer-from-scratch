@@ -79,7 +79,7 @@ class Tokenizer():
 
         # print(byte_list)
 
-    def encode(self, s: str) -> list[int]:
+    def encode(self, s: str) -> str: 
         """ 
         string -> tokens 
 
@@ -105,7 +105,7 @@ class Tokenizer():
                     if s_pair == vocab_pair:
                         byte_list[i] = -1
                         byte_list[i + 1] = pt_num
-                        pair_found = True 
+                        pair_found = True
                     
             byte_list = [b for b in byte_list if b != -1]
 
@@ -114,18 +114,27 @@ class Tokenizer():
 
         return new_str 
 
-    def decode(self) -> str:
+    def decode(self, s) -> str:
         """ 
         tokens -> string 
         """
-        pass
 
+        byte_list = list(s.encode("utf-8"))
+        pair_inserted = True
+
+        while pair_inserted:
+            pair_inserted = False 
+            for i, b in enumerate(byte_list):
+                if b in self.vocab:
+                    pair = self.vocab[b]
+                    # TODO: Insert vocab pair
+                    pair_inserted = True
 
 data = ""
 with open("training_text.txt", "r", encoding="utf-8") as f:
     data = f.read()
 
-data = "aabcdeaaghi"
+# data = "aabcdeaaghi"
 
 print(f"data before={data}")
 
