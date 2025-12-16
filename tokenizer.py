@@ -40,13 +40,16 @@ def timed(func):
 class Tokenizer():
     def __init__(self, training_data):
         self.data = training_data
-
-    @timed
+        self.vocab = {
+            b: b
+            for b in set(self.data.encode("utf-8"))
+        } 
+ 
+    # @timed
     def train(self):
         byte_list = list(self.data.encode("utf-8"))
         # print(byte_list)
 
-        new_encodings = {}
         unused_code = 256
 
         # Byte pair loop
@@ -68,20 +71,53 @@ class Tokenizer():
                     byte_list[i] = unused_code
                     byte_list[i + 1] = -1
 
-            new_encodings[unused_code] = max_pair 
+            self.vocab[unused_code] = max_pair 
             unused_code += 1
 
-            # Remove -1s
+            # Filter out -1s
             byte_list = [byte for byte in byte_list if byte != -1]
 
         # print(byte_list)
 
-    def encode(self, s: str):
-        """ string -> tokens """
-        pass
+    def encode(self, s: str) -> list[int]:
+        """ 
+        string -> tokens 
+
+        We want to convert the string into the tokens.
+
+        This will involve multiple passes on s
+        my vocab dictionary contains byte -> pair pairing
+        we need to start iterating over the pairs on strings 
+        and compare to the list of values in the dict
+        I think the way we encode is similar to how we train it
+        
+        for every pair, iterate over the vocabulary values
+        if you find a match, replace
+        """
+        
+        byte_list = list(s.encode("utf-8"))
+        pair_found = True
+        
+        while pair_found:
+            for i, s_pair in enumerate(zip(byte_list, byte_list[1:])):
+                pair_found = False
+                for pt_num, vocab_pair in self.vocab.items():
+                    if s_pair == vocab_pair:
+                        byte_list[i] = -1
+                        byte_list[i + 1] = pt_num
+                        pair_found = True 
+                    
+            byte_list = [b for b in byte_list if b != -1]
+
+        char_list = [chr(b) for b in byte_list]
+        new_str = "".join(char_list)
+
+        return new_str 
 
     def decode(self) -> str:
-        """ tokens -> string """
+        """ 
+        tokens -> string 
+        """
         pass
 
 
@@ -89,5 +125,12 @@ data = ""
 with open("training_text.txt", "r", encoding="utf-8") as f:
     data = f.read()
 
+data = "aabcdeaaghi"
+
+print(f"data before={data}")
+
 t = Tokenizer(training_data=data)
 t.train()
+
+print(f"data after={t.encode(data)}")
+
