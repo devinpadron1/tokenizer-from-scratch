@@ -1,28 +1,3 @@
-""" 
-Implement Byte Pair encoding
-1. Continuously iterate over your text
-2. Find the most frequent adjacent pairs of bytes
-    - how to store? dict with key being encoding as str, value being count?
-    - do we replace all in each pass or one per pass?
-    - could use a heap
-        - why?
-            - I wouldn't need to sort or iterate over
-3. Replace it with a new character
-    - which character?
-        - initially we'll have 
-4. Continue until all are unique(?)
-    - unsure about the stop condition (when no tokens with freq > 1?)
-
-Data Structures
-{} to count pairs    
-    - dict: pair (str) -> count (int)
-    - a max heap which contains highest count pair on top
-{} to store your vocabulary
-    - dict with mapping between abbreviated char and string
-    - ex Z -> aa
-"""
-
-
 from collections import defaultdict
 import time
 
