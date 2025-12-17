@@ -59,9 +59,9 @@ class Tokenizer():
             self.vocab[unused_code_pt] = max_pair 
             unused_code_pt += 1
 
-    def encode(self, s: str) -> str: 
-        """ Converts string to compressed version """
-        
+    @timed
+    def encode(self, s: str) -> list[int]: 
+        """ Convert string to tokens """
         byte_list = list(s.encode("utf-8"))
         pair_found = True
 
@@ -76,46 +76,64 @@ class Tokenizer():
                     
             byte_list = [b for b in byte_list if b != -1]
 
-        return self.byte_list_to_str(byte_list)
-
-    def decode(self, s) -> str:
-        """ Convert compressed string to original """
-        # Convert chars to code points
-        # Recall our vocab maps code points to byte pairs
-        code_points = [ord(c) for c in s] 
-
+        return byte_list
+    
+    @timed
+    def decode(self, tokens) -> str:
+        """ Convert tokens to string """
         pair_inserted = True
+        final_code_points = []
 
         while pair_inserted:
-            pairs_to_insert = []
+            final_code_points = []
+            pair_inserted = False
 
-            # Gather pairs
-            for i, pt in enumerate(code_points):
-                if pt <= 255 or pt not in self.vocab:
+            for pt in tokens:
+                if pt <= CODE_POINT_START - 1 or pt not in self.vocab:
                     # Only values above 255 are assigned pairs
+                    final_code_points.append(pt)
                     continue
 
-                pair = self.vocab[pt]
-                pairs_to_insert.append((i, pair))
-                code_points[i] = -1
+                b1, b2 = self.vocab[pt]
+                final_code_points.extend([b1, b2])
+               
+                # Reset list - keep the loop going
+                tokens = final_code_points
+                pair_inserted = True
 
-            # Insert pairs
+        # Convert code points to byte ints
+        return self.byte_list_to_str(final_code_points)
+
+    def byte_list_to_str(self, byte_list: list[int]) -> str:
+        output_str = ""
+
+        # Loop needed to handle multi-byte chars
+        i = 0
+        while i < len(byte_list):
+            # Convert byte to binary string
+            b_bin = f"{byte_list[i]:08b}"
+            if b_bin[0] == "0":
+                # Single byte sequence
+                output_str += chr(byte_list[i])
+                i += 1
+                continue
+
+            bytez = []
             offset = 0
-            for i, p in pairs_to_insert:
-                idx = i + offset
-                code_points[idx:idx] = p 
-                offset += 2  # Since we're adding 2 items to the list
+            if all(b == '1' for b in b_bin[:4]):
+                offset = 4  # 4 byte sequence
+            elif all(b == '1' for b in b_bin[:3]):
+                offset = 3  # 3 byte sequence
+            else:
+                offset = 2  # 2 byte sequence
 
-            # Clean up prior encodings
-            code_points = [pt for pt in code_points if pt != -1]
+            bytez = byte_list[i:i+offset]
+            i += offset
+            
+            c = bytes(bytez).decode("utf-8")
+            output_str += c
 
-            pair_inserted = True if pairs_to_insert else False
-
-        return self.byte_list_to_str(code_points)
-
-    def byte_list_to_str(self, byte_list) -> str:
-        char_list = [chr(b) for b in byte_list]
-        return "".join(char_list)
+        return output_str 
 
 
 data = ""
