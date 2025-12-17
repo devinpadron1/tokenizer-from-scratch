@@ -14,17 +14,21 @@ def timed(func):
 
 
 class Tokenizer():
-    def __init__(self, training_data):
+    def __init__(self):
+        self.data = ""
+        self.vocab = {} 
+ 
+    @timed
+    def train(self, training_data):
+        # Build initial vocabulary
         self.data = training_data
         self.vocab = {
             b: b
             for b in set(self.data.encode("utf-8"))
         } 
- 
-    # @timed
-    def train(self):
+
+        # Convert chars to bytes
         byte_list = list(self.data.encode("utf-8"))
-        # print(byte_list)
 
         unused_code_pt = CODE_POINT_START 
 
@@ -118,23 +122,11 @@ data = ""
 with open("training_text.txt", "r", encoding="utf-8") as f:
     data = f.read()
 
-data = "café naïve résumé"
-
-print()
-print(f"  input data => {data}")
-# print(list(data.encode("utf-8")))
-
-t = Tokenizer(training_data=data)
-t.train()
+t = Tokenizer()
+t.train(training_data=data)
 
 encoded_data = t.encode(data)
-print(f"encoded data => {encoded_data}")
-# print([ord(d) for d in encoded_data])
-
 decoded_data = t.decode(encoded_data)
-print(f"decoded data => {decoded_data}")
 
-print()
 print("success! :-)") if data == decoded_data else print("tokenizer failed :-(")
-print()
 
