@@ -1,6 +1,7 @@
 from collections import defaultdict
 import time
 
+CODE_POINT_START = 256  # Start value for custom code point assignment
 
 def timed(func):
     def wrapper(*args, **kwargs):
@@ -25,7 +26,7 @@ class Tokenizer():
         byte_list = list(self.data.encode("utf-8"))
         # print(byte_list)
 
-        unused_code_pt = 256
+        unused_code_pt = CODE_POINT_START 
 
         # Byte pair loop
         while True:
