@@ -68,18 +68,16 @@ class Tokenizer():
             if max_freq == 1:
                 break
 
-            # Replace
-            for i, (b1, b2) in enumerate(zip(byte_list, byte_list[1:])):
+            new_byte_list = []
+            for b1, b2 in zip(byte_list, byte_list[1:]):
                 if (b1, b2) == max_pair:
-                    byte_list[i] = unused_code_pt
-                    byte_list[i + 1] = -1
+                    new_byte_list.append(unused_code_pt)
+                else:
+                    new_byte_list.append(b1)
 
+            byte_list = new_byte_list
             self.vocab[unused_code_pt] = max_pair 
             unused_code_pt += 1
-
-            # Filter out -1s
-            byte_list = [byte for byte in byte_list if byte != -1]
-
 
     def encode(self, s: str) -> str: 
         """ Converts string to compressed version """
