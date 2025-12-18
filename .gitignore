@@ -1,1 +1,5 @@
 __pycache__/
+tokenizer_c
+tokenizer_rust
+*.o
+*.out
