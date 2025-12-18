@@ -109,39 +109,7 @@ class Tokenizer():
                 tokens = final_code_points
                 pair_inserted = True
 
-        # Convert code points to byte ints
-        return self.byte_list_to_str(final_code_points)
-
-    def byte_list_to_str(self, byte_list: list[int]) -> str:
-        output_str = ""
-
-        # Loop needed to handle multi-byte chars
-        i = 0
-        while i < len(byte_list):
-            # Convert byte to binary string
-            b_bin = f"{byte_list[i]:08b}"
-            if b_bin[0] == "0":
-                # Single byte sequence
-                output_str += chr(byte_list[i])
-                i += 1
-                continue
-
-            bytez = []
-            offset = 0
-            if all(b == '1' for b in b_bin[:4]):
-                offset = 4  # 4 byte sequence
-            elif all(b == '1' for b in b_bin[:3]):
-                offset = 3  # 3 byte sequence
-            else:
-                offset = 2  # 2 byte sequence
-
-            bytez = byte_list[i:i+offset]
-            i += offset
-            
-            c = bytes(bytez).decode("utf-8")
-            output_str += c
-
-        return output_str 
+        return bytes(final_code_points).decode("utf-8")
 
 
 with open("training_text.txt", "r", encoding="utf-8") as f:
