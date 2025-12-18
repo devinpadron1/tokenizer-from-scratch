@@ -9,11 +9,11 @@ Reference
 
 This project includes identical implementations of the BPE (Byte Pair Encoding) tokenizer in three languages for performance comparison:
 
-- **Python** (`tokenizer.py`) - Original implementation
-- **C** (`tokenizer.c`) - Low-level compiled version
-- **Rust** (`tokenizer.rs`) - Memory-safe compiled version
+- **Python** (`tokenizer.py`) - Uses `defaultdict` for pair counting
+- **C** (`tokenizer.c`) - Uses `uthash` library for hash table-based pair counting
+- **Rust** (`tokenizer.rs`) - Uses `HashMap` from standard library
 
-All three implementations use the exact same algorithm to enable apples-to-apples performance comparison.
+All three implementations use the **same algorithm and data structures** (hash tables for O(n) pair counting) to enable true apples-to-apples performance comparison. The only differences are language-specific and compiler optimizations.
 
 ## Prerequisites
 
@@ -84,8 +84,9 @@ make test
 ```
 .
 ├── tokenizer.py          # Python implementation
-├── tokenizer.c           # C implementation
+├── tokenizer.c           # C implementation (uses uthash.h)
 ├── tokenizer.rs          # Rust implementation
+├── uthash.h             # Hash table library for C (header-only)
 ├── test_tokenizer.py     # Test suite
 ├── training_text.txt     # Sample training data
 ├── benchmark.sh          # Benchmark runner script

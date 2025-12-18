@@ -4,6 +4,7 @@
 #include <time.h>
 #include <stdint.h>
 #include <stdbool.h>
+#include "uthash.h"
 
 #define CODE_POINT_START 256
 #define MAX_VOCAB_SIZE 50000
@@ -13,6 +14,13 @@ typedef struct {
     int b1;
     int b2;
 } Pair;
+
+// Hash table entry for pair counting
+typedef struct {
+    Pair key;           // Key (the pair)
+    int count;          // Value (frequency)
+    UT_hash_handle hh;  // Makes this structure hashable
+} PairHashEntry;
 
 // Vocabulary entry
 typedef struct {
@@ -33,12 +41,6 @@ typedef struct {
     VocabEntry vocab[MAX_VOCAB_SIZE];
     size_t vocab_size;
 } Tokenizer;
-
-// Pair count for tracking frequencies
-typedef struct {
-    Pair pair;
-    int count;
-} PairCount;
 
 // Initialize byte list
 ByteList* bytelist_create(size_t initial_capacity) {
@@ -81,38 +83,61 @@ void get_unique_bytes(const char *data, bool *present) {
     }
 }
 
-// Count pairs in byte list
-PairCount* count_pairs(ByteList *list, size_t *num_pairs) {
+// Count pairs using hash table (now O(n) instead of O(n²))
+PairHashEntry* count_pairs_hash(ByteList *list) {
     if (list->size < 2) {
-        *num_pairs = 0;
         return NULL;
     }
 
-    // Use a simple array to count pairs (inefficient but matches Python logic)
-    PairCount *pairs = malloc(list->size * sizeof(PairCount));
-    *num_pairs = 0;
+    PairHashEntry *pairs_hash = NULL;
 
     for (size_t i = 0; i < list->size - 1; i++) {
         Pair p = {list->data[i], list->data[i + 1]};
 
-        // Find if pair already exists
-        bool found = false;
-        for (size_t j = 0; j < *num_pairs; j++) {
-            if (pairs[j].pair.b1 == p.b1 && pairs[j].pair.b2 == p.b2) {
-                pairs[j].count++;
-                found = true;
-                break;
-            }
-        }
+        PairHashEntry *entry;
+        HASH_FIND(hh, pairs_hash, &p, sizeof(Pair), entry);
 
-        if (!found) {
-            pairs[*num_pairs].pair = p;
-            pairs[*num_pairs].count = 1;
-            (*num_pairs)++;
+        if (entry) {
+            // Pair already exists, increment count
+            entry->count++;
+        } else {
+            // New pair, add to hash table
+            entry = malloc(sizeof(PairHashEntry));
+            entry->key = p;
+            entry->count = 1;
+            HASH_ADD(hh, pairs_hash, key, sizeof(Pair), entry);
         }
     }
 
-    return pairs;
+    return pairs_hash;
+}
+
+// Find max frequency pair from hash table
+bool find_max_pair(PairHashEntry *pairs_hash, Pair *max_pair, int *max_freq) {
+    if (pairs_hash == NULL) {
+        return false;
+    }
+
+    *max_freq = 0;
+    PairHashEntry *entry, *tmp;
+
+    HASH_ITER(hh, pairs_hash, entry, tmp) {
+        if (entry->count > *max_freq) {
+            *max_freq = entry->count;
+            *max_pair = entry->key;
+        }
+    }
+
+    return true;
+}
+
+// Free hash table
+void free_pairs_hash(PairHashEntry *pairs_hash) {
+    PairHashEntry *entry, *tmp;
+    HASH_ITER(hh, pairs_hash, entry, tmp) {
+        HASH_DEL(pairs_hash, entry);
+        free(entry);
+    }
 }
 
 // Train the tokenizer
@@ -139,24 +164,21 @@ void tokenizer_train(Tokenizer *tok, const char *training_data) {
 
     // Byte pair loop
     while (true) {
-        size_t num_pairs;
-        PairCount *pairs = count_pairs(byte_list, &num_pairs);
+        PairHashEntry *pairs_hash = count_pairs_hash(byte_list);
 
-        if (num_pairs == 0) {
-            free(pairs);
+        if (pairs_hash == NULL) {
             break;
         }
 
         // Find max frequency pair
-        int max_freq = 0;
-        Pair max_pair = {0, 0};
-        for (size_t i = 0; i < num_pairs; i++) {
-            if (pairs[i].count > max_freq) {
-                max_freq = pairs[i].count;
-                max_pair = pairs[i].pair;
-            }
+        Pair max_pair;
+        int max_freq;
+        if (!find_max_pair(pairs_hash, &max_pair, &max_freq)) {
+            free_pairs_hash(pairs_hash);
+            break;
         }
-        free(pairs);
+
+        free_pairs_hash(pairs_hash);
 
         if (max_freq == 1) {
             break;
@@ -304,8 +326,8 @@ int main() {
     fseek(f, 0, SEEK_SET);
 
     char *data = malloc(fsize + 1);
-    fread(data, 1, fsize, f);
-    data[fsize] = '\0';
+    size_t bytes_read = fread(data, 1, fsize, f);
+    data[bytes_read] = '\0';
     fclose(f);
 
     printf("INPUT: Loaded from training_text.txt\n");
