@@ -48,12 +48,19 @@ class Tokenizer():
             if max_freq == 1:
                 break
 
+            # Replace most freq pair with unused code point
             new_byte_list = []
-            for b1, b2 in zip(byte_list, byte_list[1:]):
-                if (b1, b2) == max_pair:
+            i = 0
+            while i < len(byte_list):
+                b1 = byte_list[i]
+                b2 = byte_list[i + 1] if i + 1 < len(byte_list) else None
+
+                if b2 is not None and (b1, b2) == max_pair:
                     new_byte_list.append(unused_code_pt)
+                    i += 2
                 else:
                     new_byte_list.append(b1)
+                    i += 1
 
             byte_list = new_byte_list
             self.vocab[unused_code_pt] = max_pair 
@@ -73,6 +80,7 @@ class Tokenizer():
                         byte_list[i] = -1
                         byte_list[i + 1] = code_pt
                         pair_found = True
+                        break
                     
             byte_list = [b for b in byte_list if b != -1]
 
@@ -136,7 +144,6 @@ class Tokenizer():
         return output_str 
 
 
-data = ""
 with open("training_text.txt", "r", encoding="utf-8") as f:
     data = f.read()
 
