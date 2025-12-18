@@ -136,15 +136,40 @@ class Tokenizer():
         return output_str 
 
 
+print("\n" + "=" * 70)
+print("TOKENIZER MAIN EXECUTION")
+print("=" * 70)
+
 data = ""
 with open("training_text.txt", "r", encoding="utf-8") as f:
     data = f.read()
 
+print(f"INPUT: Loaded from training_text.txt")
+print(f"       Length: {len(data)} characters, {len(data.encode('utf-8'))} bytes")
+
+print("\n--- TRAINING ---")
 t = Tokenizer()
 t.train(training_data=data)
+print(f"Vocabulary size: {len(t.vocab)} tokens")
+print(f"Learned merges: {len([k for k in t.vocab.keys() if k >= 256])}")
 
+print("\n--- ENCODING ---")
 encoded_data = t.encode(data)
-decoded_data = t.decode(encoded_data)
+print(f"Token count: {len(encoded_data)}")
+compression_ratio = (1 - len(encoded_data) / len(data.encode('utf-8'))) * 100
+print(f"Compression: {compression_ratio:.1f}% ({len(data.encode('utf-8'))} bytes → {len(encoded_data)} tokens)")
 
-print("success! :-)") if data == decoded_data else print("tokenizer failed :-(")
+print("\n--- DECODING ---")
+decoded_data = t.decode(encoded_data)
+print(f"Output length: {len(decoded_data)} characters")
+
+print("\n--- RESULT ---")
+if data == decoded_data:
+    print("✓ SUCCESS: Input matches output")
+else:
+    print("✗ FAILED: Input does not match output")
+    print(f"  Expected length: {len(data)}")
+    print(f"  Got length: {len(decoded_data)}")
+
+print("=" * 70 + "\n")
 
