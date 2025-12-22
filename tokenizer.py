@@ -17,6 +17,7 @@ class Tokenizer():
     def __init__(self):
         self.data = ""
         self.vocab = {} 
+        self.num_iterations = 20
  
     @timed
     def train(self, training_data):
@@ -25,15 +26,17 @@ class Tokenizer():
         self.vocab = {
             b: b
             for b in set(self.data.encode("utf-8"))
-        } 
+        }
+        print(f"Initial vocabulary size: {len(self.vocab)}")
 
         # Convert chars to bytes
         byte_list = list(self.data.encode("utf-8"))
+        print(f"Initial byte list size: {len(byte_list)}")
 
         unused_code_pt = CODE_POINT_START 
 
         # Byte pair loop
-        while True:
+        for i in range(self.num_iterations):
             # Gather most frequent pairs
             pairs = defaultdict(int) 
             for b1, b2 in zip(byte_list, byte_list[1:]):
@@ -65,6 +68,9 @@ class Tokenizer():
             byte_list = new_byte_list
             self.vocab[unused_code_pt] = max_pair 
             unused_code_pt += 1
+
+        print(f"Final vocabulary size: {len(self.vocab)}")
+        print(f"Final byte list size: {len(byte_list)}")
 
     @timed
     def encode(self, s: str) -> list[int]: 

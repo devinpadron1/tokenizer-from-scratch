@@ -1,4 +1,12 @@
 ## Qs
+### What is tokenization? Why is it used?
+Tokenization is the process of converting text into tokens. A token is the "atom" of an LLM. 
+
+Tokens are generally more dense than a string.
+"Daughter" -> string -> 8 bytes
+"Dau" "gh" "ter" -> tokens -> 3 tokens
+
+### 
 Why pair bytes and not characters?
 - think vocabulary size, lookup tables
 
@@ -12,12 +20,9 @@ Does a larger vocabulary size make a model better? What are the pros / cons of a
 
 I don't understand how lookup tables work. We'll get there...
 
-Fundamental question you need to understand: why is tokenization required? Why can't we feed the model raw strings?
 
 ## Know your terminology
-I need to understand the distinction between bytes, point numbers
 utf-8 and ascii
-
 an encoding is a way to represent something with something else
 
 Unicode is the standard that assigns code points (numbers) to characters
