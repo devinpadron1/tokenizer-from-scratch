@@ -1,10 +1,28 @@
 ## Qs
-### What is tokenization? Why is it used?
-Tokenization is the process of converting text into tokens. A token is the "atom" of an LLM. 
+### What is tokenization?
+Tokenization is the process of converting text into tokens. 
 
-Tokens are generally more dense than a string.
-"Daughter" -> string -> 8 bytes
-"Dau" "gh" "ter" -> tokens -> 3 tokens
+A token is a number (an id) that represents a piece of text. It's the "atom" of an LLM.
+
+token = 3/4 word on average
+
+### Why is tokenization required?
+LLMs have an inherent constraint in their design. They are limited by their context window - the maximum number of tokens it can process for a given request.
+
+Converting all of the raw characters into tokens produces a very large vocabulary size that takes up token space in the context window.
+
+#### Example
+The dog ate the bone
+|-||--||--||--||---|
+ 1  2   3   4    5
+
+This sentence is 5 tokens with the GPT4 tokenizer - one for each word, some with leading spaces - but 20 characters total.
+
+A token is a way to compact meaning.
+
+### Why can't tokens be full words?
+There is nuance.
+
 
 ### 
 Why pair bytes and not characters?
